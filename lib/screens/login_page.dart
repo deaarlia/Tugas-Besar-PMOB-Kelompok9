@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/validators.dart'; // sesuaikan path dengan lokasi validators.dart
+import '../routes/app_routes.dart';
+import 'package:flutter/gestures.dart';
 
 class UnandspaceCampusAuthentication extends StatefulWidget {
   const UnandspaceCampusAuthentication({super.key});
@@ -11,6 +14,7 @@ class UnandspaceCampusAuthentication extends StatefulWidget {
 
 class _UnandspaceCampusAuthenticationState
     extends State<UnandspaceCampusAuthentication> {
+  final _formKey = GlobalKey<FormState>(); // (1)
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
@@ -33,10 +37,18 @@ class _UnandspaceCampusAuthenticationState
       );
 
   @override
-  void dispose() {
+  void dispose() { // (2)
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  void _submit() { // (3)
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+
+     Navigator.pushReplacementNamed(context, AppRoutes.home);
+
   }
 
   @override
@@ -91,87 +103,96 @@ class _UnandspaceCampusAuthenticationState
                         borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Email Kampus', style: text.labelMedium),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _email,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: _decoration(Icons.mail_outline),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Kata Sandi', style: text.labelMedium),
-                              Text('Lupa kata sandi?',
-                                  style: text.labelSmall?.copyWith(
-                                      color: _green,
-                                      fontWeight: FontWeight.w700)),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _password,
-                            obscureText: _obscure,
-                            decoration: _decoration(
-                              Icons.lock_outline,
-                              suffix: IconButton(
-                                icon: Icon(_obscure
-                                    ? Icons.visibility_off
-                                    : Icons.visibility),
-                                onPressed: () =>
-                                    setState(() => _obscure = !_obscure),
-                              ),
+                      child: Form( // (4)
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Email Kampus', style: text.labelMedium),
+                            const SizedBox(height: 6),
+                            TextFormField( // (5)
+                              controller: _email,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: _decoration(Icons.mail_outline),
+                              validator: Validators.email,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(children: [
-                            Checkbox(
-                              value: _remember,
-                              activeColor: _green,
-                              onChanged: (v) =>
-                                  setState(() => _remember = v ?? false),
-                            ),
-                            Text('Ingat saya', style: text.bodySmall),
-                          ]),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _green,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                              ),
-                              onPressed: () {/* TODO: login */},
-                              label: const Text('Masuk'),
-                              icon: const Icon(Icons.arrow_forward, size: 18),
-                              iconAlignment: IconAlignment.end,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Center(
-                            child: Text.rich(TextSpan(
-                              text: 'Belum punya akun? ',
-                              style: text.bodySmall,
-                              children: const [
-                                TextSpan(
-                                    text: 'Daftar',
-                                    style: TextStyle(color: _green)),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Kata Sandi', style: text.labelMedium),
+                                Text('Lupa kata sandi?',
+                                    style: text.labelSmall?.copyWith(
+                                        color: _green,
+                                        fontWeight: FontWeight.w700)),
                               ],
-                            )),
-                          ),
-                        ],
+                            ),
+                            const SizedBox(height: 6),
+                            TextFormField( // (5)
+                              controller: _password,
+                              obscureText: _obscure,
+                              validator: Validators.password,
+                              decoration: _decoration(
+                                Icons.lock_outline,
+                                suffix: IconButton(
+                                  icon: Icon(_obscure
+                                      ? Icons.visibility_off
+                                      : Icons.visibility),
+                                  onPressed: () =>
+                                      setState(() => _obscure = !_obscure),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(children: [
+                              Checkbox(
+                                value: _remember,
+                                activeColor: _green,
+                                onChanged: (v) =>
+                                    setState(() => _remember = v ?? false),
+                              ),
+                              Text('Ingat saya', style: text.bodySmall),
+                            ]),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _green,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                onPressed: _submit, // (6)
+                                label: const Text('Masuk'),
+                                icon: const Icon(Icons.arrow_forward, size: 18),
+                                iconAlignment: IconAlignment.end,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Center(
+  child: Text.rich(TextSpan(
+    text: 'Belum punya akun? ',
+    style: text.bodySmall,
+    children: [
+      TextSpan(
+        text: 'Daftar',
+        style: const TextStyle(color: _green),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () => Navigator.pushNamed(context, '/tidak-ada'),
+      ),
+    ],
+  )),
+),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('© 2025 Universitas Andalas', style: text.bodySmall),
+                  Text('© 2026 Universitas Andalas', style: text.bodySmall),
                 ],
               ),
             ),
