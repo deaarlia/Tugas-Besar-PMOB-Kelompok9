@@ -48,19 +48,27 @@ class _UnandspaceCampusAuthenticationState
         child: Stack(
           children: [
             Positioned(
-              right: -100, top: -96,
+              right: -100,
+              top: -96,
               child: Container(
-                width: 288, height: 288,
+                width: 288,
+                height: 288,
                 decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: Color(0x33ADEDD3)),
+                  shape: BoxShape.circle,
+                  color: Color(0x33ADEDD3),
+                ),
               ),
             ),
             Positioned(
-              left: -80, bottom: -60,
+              left: -80,
+              bottom: -60,
               child: Container(
-                width: 320, height: 320,
+                width: 320,
+                height: 320,
                 decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: Color(0x3F85F8C4)),
+                  shape: BoxShape.circle,
+                  color: Color(0x3F85F8C4),
+                ),
               ),
             ),
             SingleChildScrollView(
@@ -69,7 +77,8 @@ class _UnandspaceCampusAuthenticationState
                 children: [
                   const SizedBox(height: 40),
                   Container(
-                    width: 48, height: 48,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       color: const Color(0x99ADEDD3),
                       borderRadius: BorderRadius.circular(16),
@@ -77,18 +86,24 @@ class _UnandspaceCampusAuthenticationState
                     child: const Icon(Icons.school, color: _green),
                   ),
                   const SizedBox(height: 12),
-                  Text('Selamat Datang di\nUnandSpace',
-                      textAlign: TextAlign.center,
-                      style: text.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  Text(
+                    'Selamat Datang di\nUnandSpace',
+                    textAlign: TextAlign.center,
+                    style: text.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Masuk dengan akun email kampus Unand',
-                      style: text.bodySmall),
+                  Text(
+                    'Masuk dengan akun email kampus Unand',
+                    style: text.bodySmall,
+                  ),
                   const SizedBox(height: 24),
                   Card(
                     elevation: 1,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
@@ -106,10 +121,13 @@ class _UnandspaceCampusAuthenticationState
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Kata Sandi', style: text.labelMedium),
-                              Text('Lupa kata sandi?',
-                                  style: text.labelSmall?.copyWith(
-                                      color: _green,
-                                      fontWeight: FontWeight.w700)),
+                              Text(
+                                'Lupa kata sandi?',
+                                style: text.labelSmall?.copyWith(
+                                  color: _green,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -119,24 +137,28 @@ class _UnandspaceCampusAuthenticationState
                             decoration: _decoration(
                               Icons.lock_outline,
                               suffix: IconButton(
-                                icon: Icon(_obscure
-                                    ? Icons.visibility_off
-                                    : Icons.visibility),
+                                icon: Icon(
+                                  _obscure
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
                                 onPressed: () =>
                                     setState(() => _obscure = !_obscure),
                               ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(children: [
-                            Checkbox(
-                              value: _remember,
-                              activeColor: _green,
-                              onChanged: (v) =>
-                                  setState(() => _remember = v ?? false),
-                            ),
-                            Text('Ingat saya', style: text.bodySmall),
-                          ]),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _remember,
+                                activeColor: _green,
+                                onChanged: (v) =>
+                                    setState(() => _remember = v ?? false),
+                              ),
+                              Text('Ingat saya', style: text.bodySmall),
+                            ],
+                          ),
                           const SizedBox(height: 8),
                           SizedBox(
                             width: double.infinity,
@@ -146,9 +168,12 @@ class _UnandspaceCampusAuthenticationState
                                 backgroundColor: _green,
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                              onPressed: () {/* TODO: login */},
+                              onPressed: () {
+                                /* TODO: login */
+                              },
                               label: const Text('Masuk'),
                               icon: const Icon(Icons.arrow_forward, size: 18),
                               iconAlignment: IconAlignment.end,
@@ -156,15 +181,18 @@ class _UnandspaceCampusAuthenticationState
                           ),
                           const SizedBox(height: 16),
                           Center(
-                            child: Text.rich(TextSpan(
-                              text: 'Belum punya akun? ',
-                              style: text.bodySmall,
-                              children: const [
-                                TextSpan(
+                            child: Text.rich(
+                              TextSpan(
+                                text: 'Belum punya akun? ',
+                                style: text.bodySmall,
+                                children: const [
+                                  TextSpan(
                                     text: 'Daftar',
-                                    style: TextStyle(color: _green)),
-                              ],
-                            )),
+                                    style: TextStyle(color: _green),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),

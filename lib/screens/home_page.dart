@@ -11,7 +11,11 @@ const kMuted = Color(0xFF3D4A42);
 
 TextStyle _s(double size, FontWeight w, Color c, {double? h}) =>
     GoogleFonts.plusJakartaSans(
-        fontSize: size, fontWeight: w, color: c, height: h);
+      fontSize: size,
+      fontWeight: w,
+      color: c,
+      height: h,
+    );
 
 class Post {
   final String initials, name, tag, time, title, body;
@@ -155,13 +159,28 @@ class _Header extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text.rich(TextSpan(children: [
-                      TextSpan(text: 'Unand', style: _s(18, FontWeight.w700, kGreen)),
+                    Text.rich(
                       TextSpan(
-                          text: 'Space',
-                          style: _s(18, FontWeight.w700, const Color(0xFF059669))),
-                    ])),
-                    Text('Beranda Kampus', style: _s(11, FontWeight.w500, kMuted)),
+                        children: [
+                          TextSpan(
+                            text: 'Unand',
+                            style: _s(18, FontWeight.w700, kGreen),
+                          ),
+                          TextSpan(
+                            text: 'Space',
+                            style: _s(
+                              18,
+                              FontWeight.w700,
+                              const Color(0xFF059669),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      'Beranda Kampus',
+                      style: _s(11, FontWeight.w500, kMuted),
+                    ),
                   ],
                 ),
               ),
@@ -200,11 +219,11 @@ class _RoundIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-        child: Icon(icon, size: 18, color: fg),
-      );
+    width: 36,
+    height: 36,
+    decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+    child: Icon(icon, size: 18, color: fg),
+  );
 }
 
 class PostTile extends StatelessWidget {
@@ -228,28 +247,48 @@ class PostTile extends StatelessWidget {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: p.avatarBg,
-                child: Text(p.initials,
-                    style: _s(14, FontWeight.w700, p.avatarFg)),
+                child: Text(
+                  p.initials,
+                  style: _s(14, FontWeight.w700, p.avatarFg),
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(p.name,
-                        style: _s(14, FontWeight.w600, const Color(0xFF191C1E))),
+                    Text(
+                      p.name,
+                      style: _s(14, FontWeight.w600, const Color(0xFF191C1E)),
+                    ),
                     const SizedBox(height: 2),
-                    Row(children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                            color: kMint, borderRadius: BorderRadius.circular(99)),
-                        child: Text(p.tag, style: _s(10, FontWeight.w500, kDarkGreen)),
-                      ),
-                      const SizedBox(width: 6),
-                      Text('• ${p.time}',
-                          style: _s(10, FontWeight.w500, const Color(0xFF94A3B8))),
-                    ]),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: kMint,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            p.tag,
+                            style: _s(10, FontWeight.w500, kDarkGreen),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '• ${p.time}',
+                          style: _s(
+                            10,
+                            FontWeight.w500,
+                            const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -257,12 +296,17 @@ class PostTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(p.title, style: _s(16, FontWeight.w600, const Color(0xFF191C1E), h: 1.38)),
+          Text(
+            p.title,
+            style: _s(16, FontWeight.w600, const Color(0xFF191C1E), h: 1.38),
+          ),
           const SizedBox(height: 10),
-          Text(p.body,
-              maxLines: p.readMore ? 4 : null,
-              overflow: p.readMore ? TextOverflow.ellipsis : null,
-              style: _s(13, FontWeight.w400, const Color(0xFF475569), h: 1.63)),
+          Text(
+            p.body,
+            maxLines: p.readMore ? 4 : null,
+            overflow: p.readMore ? TextOverflow.ellipsis : null,
+            style: _s(13, FontWeight.w400, const Color(0xFF475569), h: 1.63),
+          ),
           if (p.readMore)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -279,8 +323,10 @@ class PostTile extends StatelessWidget {
               const Spacer(),
               const Icon(Icons.chat_bubble_outline, size: 16, color: kMuted),
               const SizedBox(width: 4),
-              Text(p.comments == 0 ? '' : '${p.comments} comments',
-                  style: _s(12, FontWeight.w400, kMuted)),
+              Text(
+                p.comments == 0 ? '' : '${p.comments} comments',
+                style: _s(12, FontWeight.w400, kMuted),
+              ),
               const SizedBox(width: 12),
               const Icon(Icons.bookmark_border, size: 20, color: kMuted),
               const SizedBox(width: 12),
@@ -299,26 +345,36 @@ class _VotePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-            color: kField, borderRadius: BorderRadius.circular(99)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-                color: kMint, borderRadius: BorderRadius.circular(99)),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
+    padding: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+      color: kField,
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: kMint,
+            borderRadius: BorderRadius.circular(99),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               const Icon(Icons.arrow_upward, size: 16, color: kDarkGreen),
               const SizedBox(width: 4),
               Text('$votes', style: _s(12, FontWeight.w600, kDarkGreen)),
-            ]),
+            ],
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: Icon(Icons.arrow_downward, size: 16, color: kMuted),
-          ),
-        ]),
-      );
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Icon(Icons.arrow_downward, size: 16, color: kMuted),
+        ),
+      ],
+    ),
+  );
 }
 
 class _LocationCard extends StatelessWidget {
@@ -327,29 +383,45 @@ class _LocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Column(children: [
-          Image.network('https://placehold.co/310x128',
-              height: 128, width: double.infinity, fit: BoxFit.cover),
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Row(children: [
+    borderRadius: BorderRadius.circular(8),
+    child: Column(
+      children: [
+        Image.network(
+          'https://placehold.co/310x128',
+          height: 128,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            children: [
               const Icon(Icons.location_on, size: 16, color: kGreen),
               const SizedBox(width: 6),
               Expanded(
-                  child: Text(label,
-                      style: _s(12, FontWeight.w500, const Color(0xFF191C1E)))),
+                child: Text(
+                  label,
+                  style: _s(12, FontWeight.w500, const Color(0xFF191C1E)),
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                    color: kBorder, borderRadius: BorderRadius.circular(4)),
-                child: Text('Lokasi Unand', style: _s(10, FontWeight.w500, kMuted)),
+                  color: kBorder,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Lokasi Unand',
+                  style: _s(10, FontWeight.w500, kMuted),
+                ),
               ),
-            ]),
+            ],
           ),
-        ]),
-      );
+        ),
+      ],
+    ),
+  );
 }
 
 class _AskCta extends StatelessWidget {
@@ -357,39 +429,47 @@ class _AskCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        color: kField.withOpacity(0.6),
-        child: Column(children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-                color: kGreen.withOpacity(0.1), shape: BoxShape.circle),
-            child: const Icon(Icons.help_outline, color: kGreen),
+    width: double.infinity,
+    padding: const EdgeInsets.all(24),
+    color: kField.withOpacity(0.6),
+    child: Column(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: kGreen.withOpacity(0.1),
+            shape: BoxShape.circle,
           ),
-          const SizedBox(height: 8),
-          Text('Punya pertanyaan seputar kuliah?',
-              style: _s(15, FontWeight.w600, const Color(0xFF191C1E))),
-          const SizedBox(height: 8),
-          Text(
-            'Tanyakan langsung ke ribuan rekan mahasiswa dan alumni Universitas Andalas.',
-            textAlign: TextAlign.center,
-            style: _s(12, FontWeight.w400, kMuted, h: 1.6),
+          child: const Icon(Icons.help_outline, color: kGreen),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Punya pertanyaan seputar kuliah?',
+          style: _s(15, FontWeight.w600, const Color(0xFF191C1E)),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Tanyakan langsung ke ribuan rekan mahasiswa dan alumni Universitas Andalas.',
+          textAlign: TextAlign.center,
+          style: _s(12, FontWeight.w400, kMuted, h: 1.6),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kGreen,
+            foregroundColor: Colors.white,
+            shape: const StadiumBorder(),
           ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kGreen,
-              foregroundColor: Colors.white,
-              shape: const StadiumBorder(),
-            ),
-            onPressed: () {},
-            child: Text('Buat Pertanyaan Baru',
-                style: _s(13, FontWeight.w500, Colors.white)),
+          onPressed: () {},
+          child: Text(
+            'Buat Pertanyaan Baru',
+            style: _s(13, FontWeight.w500, Colors.white),
           ),
-        ]),
-      );
+        ),
+      ],
+    ),
+  );
 }
 
 class _NavItem extends StatelessWidget {
@@ -397,7 +477,12 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool selected;
   final int badge;
-  const _NavItem(this.icon, this.label, {this.selected = false, this.badge = 0});
+  const _NavItem(
+    this.icon,
+    this.label, {
+    this.selected = false,
+    this.badge = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
