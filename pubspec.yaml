@@ -1,4 +1,4 @@
-name: tugas_pmob
+name: unand_space
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -35,6 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   google_fonts: ^9.0.0
+  image_picker: ^1.2.4
+  file_picker: ^13.1.0
 
 dev_dependencies:
   flutter_test:
