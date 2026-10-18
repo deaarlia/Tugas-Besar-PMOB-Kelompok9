@@ -2,18 +2,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tugas_pmob/models/community.dart';
+import 'package:tugas_pmob/models/thread_post.dart';
 import 'package:tugas_pmob/repositories/community_repository.dart';
 import 'package:tugas_pmob/screens/community/edit_community_screen.dart';
 import 'package:tugas_pmob/screens/community/manage_moderators_screen.dart';
+import 'package:tugas_pmob/screens/community/report_queue_screen.dart';
 import 'package:tugas_pmob/screens/community/rules_edit_screen.dart';
 import 'package:tugas_pmob/theme/app_colors.dart';
 import 'package:tugas_pmob/theme/app_spacing.dart';
 import 'package:tugas_pmob/theme/app_text_styles.dart';
 import 'package:tugas_pmob/utils/image_source.dart';
+import 'package:tugas_pmob/viewmodels/threads_provider.dart';
 import 'package:tugas_pmob/widgets/community/category_badge.dart';
 import 'package:tugas_pmob/widgets/community/community_avatar.dart';
+import 'package:tugas_pmob/widgets/community/feedback_dialog.dart';
+import 'package:tugas_pmob/widgets/community/thread_widgets.dart';
 
-enum _MenuAction { reports, announce, edit, rules, moderators }
+enum _MenuAction { reports, edit, rules, moderators }
 
 class CommunityDetailScreen extends StatefulWidget {
   const CommunityDetailScreen({super.key, required this.community});
@@ -29,18 +34,27 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   late Community _community = widget.community;
   late final TabController _tabs = TabController(length: 2, vsync: this);
   late Future<List<Moderator>> _moderators;
+  late final ThreadsProvider _threads;
+
+  bool get _canModerate =>
+      _community.myRole == CommunityRole.creator ||
+      _community.myRole == CommunityRole.moderator;
 
   @override
   void initState() {
     super.initState();
-    _moderators = context.read<CommunityRepository>().listModerators(
-      widget.community.id,
+    final repo = context.read<CommunityRepository>();
+    _moderators = repo.listModerators(widget.community.id);
+    _threads = ThreadsProvider(
+      repository: repo,
+      communityId: widget.community.id,
     );
   }
 
   @override
   void dispose() {
     _tabs.dispose();
+    _threads.dispose();
     super.dispose();
   }
 
@@ -78,15 +92,23 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     setState(() => _moderators = repo.listModerators(_community.id));
   }
 
+  Future<void> _openReports() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReportQueueScreen(community: _community),
+      ),
+    );
+    if (!mounted) return;
+    _threads.load(); // utas yang dihapus lewat laporan harus hilang dari daftar
+  }
+
   PopupMenuItem<_MenuAction> _item(
     _MenuAction value,
     IconData icon,
-    String label, {
-    bool enabled = false,
-  }) {
+    String label,
+  ) {
     return PopupMenuItem<_MenuAction>(
       value: value,
-      enabled: enabled,
       child: Row(
         children: [
           Icon(icon, size: 20),
@@ -98,45 +120,36 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   }
 
   Widget? _menu() {
-    final role = _community.myRole;
-    if (role == CommunityRole.guest) return null;
+    if (!_canModerate) return null;
+    final isCreator = _community.myRole == CommunityRole.creator;
     return PopupMenuButton<_MenuAction>(
       icon: const Icon(Icons.more_vert),
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
       onSelected: (a) {
         switch (a) {
+          case _MenuAction.reports:
+            _openReports();
           case _MenuAction.edit:
             _openEdit();
           case _MenuAction.rules:
             _openRules();
           case _MenuAction.moderators:
             _openModerators();
-          case _MenuAction.reports:
-          case _MenuAction.announce:
-            break;
         }
       },
       itemBuilder: (_) => <PopupMenuEntry<_MenuAction>>[
         _item(_MenuAction.reports, Icons.flag_outlined, 'Antrean Laporan'),
-        _item(_MenuAction.announce, Icons.campaign_outlined, 'Buat Pengumuman'),
-        if (role == CommunityRole.creator) ...[
+        if (isCreator) ...[
           const PopupMenuDivider(),
-          _item(
-            _MenuAction.edit,
-            Icons.edit_outlined,
-            'Ubah Komunitas',
-            enabled: true,
-          ),
-          _item(
-            _MenuAction.rules,
-            Icons.gavel_outlined,
-            'Atur Aturan',
-            enabled: true,
-          ),
+          _item(_MenuAction.edit, Icons.edit_outlined, 'Ubah Komunitas'),
+          _item(_MenuAction.rules, Icons.gavel_outlined, 'Atur Aturan'),
           _item(
             _MenuAction.moderators,
             Icons.admin_panel_settings_outlined,
             'Kelola Moderator',
-            enabled: true,
           ),
         ],
       ],
@@ -154,7 +167,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         title: const Text('Komunitas', style: AppTextStyles.appBarTitle),
         actions: [
           IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-          if (menu != null) menu,
+          menu ?? const SizedBox.shrink(),
         ],
       ),
       body: SafeArea(
@@ -181,8 +194,14 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
                   ),
                   ListenableBuilder(
                     listenable: _tabs,
-                    builder: (_, __) => _tabs.index == 0
-                        ? const _ThreadsEmptyState()
+                    builder: (_, _) => _tabs.index == 0
+                        ? ChangeNotifierProvider.value(
+                            value: _threads,
+                            child: _ThreadsTab(
+                              communityName: _community.name,
+                              canModerate: _canModerate,
+                            ),
+                          )
                         : _AboutTab(
                             community: _community,
                             moderators: _moderators,
@@ -361,6 +380,82 @@ class _OutlinedIconBox extends StatelessWidget {
           child: Icon(icon, size: 22, color: AppColors.textSecondary),
         ),
       ),
+    );
+  }
+}
+
+/// Tab Utas: banner utas tersemat, lalu daftar utas.
+class _ThreadsTab extends StatelessWidget {
+  const _ThreadsTab({required this.communityName, required this.canModerate});
+
+  final String communityName;
+  final bool canModerate;
+
+  Future<void> _togglePin(BuildContext context, ThreadPost t) async {
+    final p = context.read<ThreadsProvider>();
+    final wasPinned = t.isPinned;
+    final ok = wasPinned ? await p.unpin(t.id) : await p.pin(t.id);
+    if (!context.mounted) return;
+    if (ok) {
+      await FeedbackDialog.success(
+        context,
+        title: wasPinned ? 'Sematan dilepas' : 'Utas disematkan',
+        message: wasPinned
+            ? 'Utas tidak lagi disematkan di komunitas.'
+            : 'Utas ditampilkan di bagian atas komunitas.',
+      );
+    } else {
+      await FeedbackDialog.error(
+        context,
+        title: wasPinned ? 'Gagal melepas sematan' : 'Gagal menyematkan utas',
+        message: p.actionError ?? 'Terjadi kesalahan. Coba lagi.',
+      );
+    }
+  }
+
+  Widget? _menuFor(BuildContext context, ThreadPost t) {
+    if (!canModerate) return null;
+    return ThreadMenuButton(
+      isPinned: t.isPinned,
+      onTogglePin: () => _togglePin(context, t),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.watch<ThreadsProvider>();
+
+    if (p.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl * 2),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (p.loadError != null) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          children: [
+            Text(p.loadError!, style: AppTextStyles.body),
+            TextButton(onPressed: p.load, child: const Text('Coba lagi')),
+          ],
+        ),
+      );
+    }
+    if (p.threads.isEmpty) return const _ThreadsEmptyState();
+
+    final pinned = p.pinned;
+    return Column(
+      children: [
+        if (pinned != null)
+          PinnedThreadBanner(
+            thread: pinned,
+            communityName: communityName,
+            menu: _menuFor(context, pinned),
+          ),
+        for (final t in p.regular)
+          ThreadCard(thread: t, menu: _menuFor(context, t)),
+      ],
     );
   }
 }

@@ -18,7 +18,7 @@ import 'package:tugas_pmob/widgets/community/guideline_card.dart';
 import 'package:tugas_pmob/widgets/community/privacy_switch_card.dart';
 
 /// Form bersama untuk Buat (initial == null) dan Ubah (initial != null).
-/// Membutuhkan Provider<CommunityRepository> di atas widget tree.
+/// Membutuhkan `Provider<CommunityRepository>` di atas widget tree.
 class CommunityFormScreen extends StatelessWidget {
   const CommunityFormScreen({super.key, this.initial});
 

@@ -222,7 +222,7 @@ class _ExploreBody extends StatelessWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: mine.length,
-                  separatorBuilder: (_, __) =>
+                  separatorBuilder: (_, _) =>
                       const SizedBox(width: AppSpacing.md),
                   itemBuilder: (_, i) => _MyCommunityCard(
                     community: mine[i],

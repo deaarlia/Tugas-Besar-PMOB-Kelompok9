@@ -1,4 +1,7 @@
+// lib/repositories/community_repository.dart
 import 'package:tugas_pmob/models/community.dart';
+import 'package:tugas_pmob/models/report.dart';
+import 'package:tugas_pmob/models/thread_post.dart';
 
 /// Kesalahan yang pesannya boleh ditampilkan langsung ke pengguna.
 class RepositoryException implements Exception {
@@ -18,4 +21,14 @@ abstract class CommunityRepository {
   Future<List<Moderator>> listModerators(String communityId);
   Future<Moderator> appointModerator(String communityId, String identifier);
   Future<void> revokeModerator(String communityId, String moderatorId);
+
+  // FR-10
+  Future<List<ThreadPost>> listThreads(String communityId);
+  Future<void> pinThread(String communityId, String threadId);
+  Future<void> unpinThread(String communityId, String threadId);
+
+  // FR-11
+  Future<List<Report>> listReports(String communityId);
+  Future<void> rejectReport(String communityId, String reportId);
+  Future<void> deleteReportedContent(String communityId, String reportId);
 }

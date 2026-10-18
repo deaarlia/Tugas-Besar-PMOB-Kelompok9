@@ -65,7 +65,7 @@ class CommunityTextField extends StatelessWidget {
             else
               ListenableBuilder(
                 listenable: controller,
-                builder: (_, __) => Text(
+                builder: (_, _) => Text(
                   '${controller.text.length}/$maxLength',
                   style: AppTextStyles.helper,
                 ),
