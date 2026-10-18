@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/thread_post.dart';
 import '../models/user_profile.dart';
+import '../screens/community/community_explore_screen.dart';
 import '../screens/create_thread_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
@@ -10,11 +11,17 @@ class AppRoutes {
   AppRoutes._();
 
   static const String home = '/home';
+  static const String communities = '/communities';
   static const String createThread = '/create-thread';
   static const String profile = '/profile';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case communities:
+        return MaterialPageRoute<void>(
+          builder: (_) => const CommunityExploreScreen(),
+          settings: settings,
+        );
       case home:
         return MaterialPageRoute<void>(
           builder: (_) => const HomeScreen(currentUser: UserProfile.demo),

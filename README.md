@@ -10,12 +10,13 @@ Source aplikasi dikelompokkan berdasarkan tanggung jawab:
   navigasi, serta menampilkan pesan kepada pengguna.
 - `lib/viewmodels/` berisi state dan aksi layar, termasuk pemuatan feed,
   pembuatan utas, pengelolaan lampiran, dan validasi topik.
-- `lib/data/` berisi repository sebagai sumber data yang digunakan ViewModel.
+- `lib/repositories/` berisi repository sebagai sumber data yang digunakan
+  ViewModel dan layar.
 - `lib/models/` berisi model data aplikasi.
 
 ViewModel menggunakan `ChangeNotifier`; View berlangganan menggunakan
-`ListenableBuilder` bawaan Flutter. Dengan demikian aplikasi tidak memerlukan
-dependency state-management tambahan.
+`ListenableBuilder` bawaan Flutter. Dependency `provider` digunakan untuk
+menyediakan repository serta state form komunitas pada widget tree.
 
 ## Modul komunitas
 

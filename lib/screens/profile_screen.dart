@@ -43,8 +43,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _onNavTap(int index) {
     if (index == 3) return;
-    if (index == 0) {
-      Navigator.maybePop(context);
+    if (index == 0 || index == 1) {
+      Navigator.of(context).pushNamedAndRemoveUntil<void>(
+        index == 0 ? AppRoutes.home : AppRoutes.communities,
+        (_) => false,
+      );
       return;
     }
     _showMessage('Halaman ini belum tersedia.');

@@ -128,6 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onNavTap(int index) {
     if (index == 0) return; // sudah di Beranda
+    if (index == 1) {
+      Navigator.pushNamed(context, AppRoutes.communities);
+      return;
+    }
     if (index == 3) {
       Navigator.pushNamed(
         context,
