@@ -1,15 +1,14 @@
 import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../data/thread_repository.dart';
 import '../models/attachments.dart';
 import '../models/thread_post.dart';
 import '../models/user_profile.dart';
 import '../theme/app_theme.dart';
 import '../utils/validators.dart';
+import '../viewmodels/create_thread_view_model.dart';
 import '../widgets/thread_attachments_section.dart';
 import '../widgets/thread_composer_toolbar.dart';
 import '../widgets/state_views.dart';
@@ -18,48 +17,41 @@ import '../widgets/topic_dialog.dart';
 class CreateThreadScreen extends StatefulWidget {
   // DATA DITERIMA dari HomeScreen lewat arguments
   final UserProfile author;
-  const CreateThreadScreen({super.key, required this.author});
+  final ThreadPost? editingThread;
+  const CreateThreadScreen({
+    super.key,
+    required this.author,
+    this.editingThread,
+  });
 
   @override
   State<CreateThreadScreen> createState() => _CreateThreadScreenState();
 }
 
 class _CreateThreadScreenState extends State<CreateThreadScreen> {
-  static const int _maxTopics = 3;
-  static const int _maxContent = 1000;
+  static const int _maxTopics = CreateThreadViewModel.maxTopics;
+  static const int _maxContent = CreateThreadViewModel.maxContent;
 
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
-  final _picker = ImagePicker();
-  final _repository = ThreadRepository.instance;
+  late final CreateThreadViewModel _viewModel = CreateThreadViewModel(
+    author: widget.author,
+    editingThread: widget.editingThread,
+  );
 
-  // STATE form
-  final List<String> _topics = []; // opsional, hanya untuk pengelompokan
-  final List<Uint8List> _photos = [];
-  DocumentAttachment? _document;
-  bool _isAnonymous = false;
-  bool _isSubmitting = false;
-  String? _errorMessage;
-
-  bool get _hasAttachments => _photos.isNotEmpty || _document != null;
-
-  bool get _hasUnsavedInput =>
-      _titleController.text.isNotEmpty ||
-      _contentController.text.isNotEmpty ||
-      _topics.isNotEmpty ||
-      _hasAttachments;
-
-  /// Tombol "Posting" aktif hanya jika judul dan isi memenuhi aturan.
-  bool get _canPost =>
-      !_isSubmitting &&
-      _titleController.text.trim().length >= Validators.minTitleLength &&
-      _contentController.text.trim().length >= Validators.minContentLength;
+  TextEditingController get _titleController => _viewModel.titleController;
+  TextEditingController get _contentController => _viewModel.contentController;
+  List<String> get _topics => _viewModel.topics;
+  List<Uint8List> get _photos => _viewModel.photos;
+  DocumentAttachment? get _document => _viewModel.document;
+  bool get _isAnonymous => _viewModel.isAnonymous;
+  bool get _isSubmitting => _viewModel.isSubmitting;
+  String? get _errorMessage => _viewModel.errorMessage;
+  bool get _hasUnsavedInput => _viewModel.hasUnsavedInput;
+  bool get _canPost => _viewModel.canPost;
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -69,50 +61,18 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
     );
   }
 
-  // EVENT: user menekan tombol "Posting"
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
 
-    // VALIDATION: semua validator di Form dijalankan
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       _showMessage('Periksa kembali isian yang masih salah.');
-      return; // user tetap di form
+      return;
     }
 
-    // STATE -> loading
-    setState(() {
-      _isSubmitting = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final thread = await _repository.createThread(
-        title: _titleController.text.trim(),
-        content: _contentController.text.trim(),
-        topics: _topics,
-        photos: _photos,
-        document: _document,
-        author: widget.author,
-        isAnonymous: _isAnonymous,
-      );
-      if (!mounted) return;
-
-      // NAVIGATION/RESULT: tutup form sambil mengembalikan ThreadPost
+    final thread = await _viewModel.submit();
+    if (mounted && thread != null) {
       Navigator.pop<ThreadPost>(context, thread);
-    } on ThreadException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = e.message;
-        _isSubmitting = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      const msg = 'Terjadi kesalahan. Coba lagi nanti.';
-      setState(() {
-        _errorMessage = msg;
-        _isSubmitting = false;
-      });
     }
   }
 
@@ -121,96 +81,31 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
   /// Lampiran foto: membuka galeri (di web: file explorer), lalu memvalidasi
   /// format (JPG/PNG) dan ukuran (maks 3 MB) sebelum foto ditambahkan.
   Future<void> _attachPhoto() async {
-    final countError = Validators.photoCount(_photos.length);
-    if (countError != null) {
-      _showMessage(countError);
-      return;
-    }
     FocusScope.of(context).unfocus();
-    try {
-      final file = await _picker.pickImage(source: ImageSource.gallery);
-      if (!mounted || file == null) return; // user membatalkan pilihan
+    final message = await _viewModel.attachPhoto();
+    if (mounted && message != null) _showMessage(message);
+  }
 
-      final sizeBytes = await file.length();
-      if (!mounted) return;
-      final validationError = Validators.photoFile(
-        file.name,
-        sizeBytes,
-        mimeType: file.mimeType,
-      );
-      if (validationError != null) {
-        _showMessage(validationError);
-        return;
-      }
-
-      final bytes = await file.readAsBytes();
-      if (!mounted) return;
-      final actualSizeError = Validators.photoFile(
-        file.name,
-        bytes.length,
-        mimeType: file.mimeType,
-      );
-      if (actualSizeError != null) {
-        _showMessage(actualSizeError);
-        return;
-      }
-      setState(() => _photos.add(bytes));
-    } catch (e) {
-      if (!mounted) return;
-      _showMessage('Gagal membuka galeri. Coba lagi.');
-    }
+  Future<void> _capturePhoto() async {
+    FocusScope.of(context).unfocus();
+    final message = await _viewModel.attachPhoto(source: ImageSource.camera);
+    if (mounted && message != null) _showMessage(message);
   }
 
   Future<void> _attachDocument() async {
     FocusScope.of(context).unfocus();
-    try {
-      final file = await FilePicker.pickFile(
-        type: FileType.custom,
-        allowedExtensions: Validators.documentExtensions,
-      );
-      if (!mounted || file == null) return;
-
-      final sizeBytes = await file.length();
-      if (!mounted) return;
-      if (sizeBytes == null) {
-        _showMessage('Ukuran dokumen tidak dapat dibaca. Coba berkas lain.');
-        return;
-      }
-
-      final validationError = Validators.documentFile(file.name, sizeBytes);
-      if (validationError != null) {
-        _showMessage(validationError);
-        return;
-      }
-
-      final bytes = await file.readAsBytes();
-      if (!mounted) return;
-      final actualSizeError = Validators.documentFile(file.name, bytes.length);
-      if (actualSizeError != null) {
-        _showMessage(actualSizeError);
-        return;
-      }
-
-      setState(
-        () => _document = DocumentAttachment(name: file.name, bytes: bytes),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      _showMessage('Gagal memilih dokumen: $e');
-    }
+    final message = await _viewModel.attachDocument();
+    if (mounted && message != null) _showMessage(message);
   }
 
   Future<void> _addTopic() async {
-    if (_topics.length >= _maxTopics) {
-      _showMessage('Maksimal $_maxTopics topik.');
-      return;
-    }
     final topic = await showDialog<String>(
       context: context,
       builder: (_) => TopicDialog(existing: _topics),
     );
     if (!mounted || topic == null) return;
-    setState(() => _topics.add(topic));
+    final message = _viewModel.addTopic(topic);
+    if (message != null) _showMessage(message);
   }
 
   Future<bool> _confirmDiscard() async {
@@ -218,7 +113,9 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Buang utas?'),
-        content: const Text('Isi utas akan hilang tanpa disimpan. Yakin ingin keluar?'),
+        content: const Text(
+          'Isi utas akan hilang tanpa disimpan. Yakin ingin keluar?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -239,89 +136,88 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([_titleController, _contentController]),
-      builder: (context, child) => PopScope<Object?>(
+      listenable: _viewModel,
+      builder: (context, _) => PopScope<Object?>(
         canPop: !_hasUnsavedInput || _isSubmitting,
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
           final shouldLeave = await _confirmDiscard();
           if (context.mounted && shouldLeave) Navigator.pop(context);
         },
-        child: child!,
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.maybePop(context),
-          ),
-          title: const Text(
-            'Buat Utas Baru',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.maybePop(context),
+            ),
+            title: Text(
+              _viewModel.isEditing ? 'Edit Utas' : 'Buat Utas Baru',
+              style: TextStyle(
+                fontSize: AppTypography.pageTitle,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark,
+              ),
             ),
           ),
-        ),
-        body: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildAuthorRow(),
-                        const Divider(height: 1, color: AppColors.border),
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_errorMessage != null) ...[
-                                ErrorBanner(message: _errorMessage!),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildAuthorRow(),
+                          const Divider(height: 1, color: AppColors.border),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (_errorMessage != null) ...[
+                                  ErrorBanner(message: _errorMessage!),
+                                  const SizedBox(height: 12),
+                                ],
+                                _buildTitleField(),
+                                const SizedBox(height: 8),
+                                _buildTopics(),
                                 const SizedBox(height: 12),
+                                _buildContentField(),
                               ],
-                              _buildTitleField(),
-                              const SizedBox(height: 8),
-                              _buildTopics(),
-                              const SizedBox(height: 12),
-                              _buildContentField(),
-                            ],
+                            ),
                           ),
-                        ),
-                        ThreadAttachmentsSection(
-                          photos: _photos,
-                          document: _document,
-                          enabled: !_isSubmitting,
-                          onRemovePhoto: (index) =>
-                              setState(() => _photos.removeAt(index)),
-                          onRemoveDocument: () =>
-                              setState(() => _document = null),
-                        ),
-                        const Divider(height: 1, color: AppColors.border),
-                        _buildAnonymousSwitch(),
-                      ],
+                          ThreadAttachmentsSection(
+                            photos: _photos,
+                            document: _document,
+                            enabled: !_isSubmitting,
+                            onRemovePhoto: _viewModel.removePhoto,
+                            onRemoveDocument: _viewModel.removeDocument,
+                          ),
+                          const Divider(height: 1, color: AppColors.border),
+                          _buildAnonymousSwitch(),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              ThreadComposerToolbar(
-                titleController: _titleController,
-                contentController: _contentController,
-                maxContent: _maxContent,
-                isSubmitting: _isSubmitting,
-                canPost: () => _canPost,
-                onAttachPhoto: _attachPhoto,
-                onAttachDocument: _attachDocument,
-                onPost: _submit,
-              ),
-            ],
+                ThreadComposerToolbar(
+                  titleController: _titleController,
+                  contentController: _contentController,
+                  maxContent: _maxContent,
+                  isSubmitting: _isSubmitting,
+                  canPost: () => _canPost,
+                  postLabel: _viewModel.isEditing ? 'Simpan' : 'Posting',
+                  onAttachPhoto: _attachPhoto,
+                  onCapturePhoto: _capturePhoto,
+                  onAttachDocument: _attachDocument,
+                  onPost: _submit,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -343,7 +239,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
               style: const TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
-                fontSize: 12,
+                fontSize: AppTypography.label,
               ),
             ),
           ),
@@ -355,7 +251,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
               Text(
                 widget.author.name,
                 style: const TextStyle(
-                  fontSize: 13.5,
+                  fontSize: AppTypography.body,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
                 ),
@@ -363,7 +259,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
               Text(
                 widget.author.campusLabel,
                 style: const TextStyle(
-                  fontSize: 11.5,
+                  fontSize: AppTypography.caption,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textMuted,
                 ),
@@ -383,7 +279,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
       textCapitalization: TextCapitalization.sentences,
       textInputAction: TextInputAction.next,
       style: const TextStyle(
-        fontSize: 17,
+        fontSize: AppTypography.sectionTitle,
         fontWeight: FontWeight.w600,
         color: AppColors.textDark,
       ),
@@ -416,11 +312,9 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
             labelStyle: const TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.w600,
-              fontSize: 11.5,
+              fontSize: AppTypography.caption,
             ),
-            onDeleted: _isSubmitting
-                ? null
-                : () => setState(() => _topics.remove(t)),
+            onDeleted: _isSubmitting ? null : () => _viewModel.removeTopic(t),
           ),
         ),
         if (_topics.length < _maxTopics)
@@ -430,7 +324,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
             labelStyle: const TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.w700,
-              fontSize: 11.5,
+              fontSize: AppTypography.caption,
             ),
             backgroundColor: Colors.white,
             shape: const StadiumBorder(),
@@ -449,7 +343,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
       maxLines: null,
       maxLength: _maxContent,
       style: const TextStyle(
-        fontSize: 14,
+        fontSize: AppTypography.body,
         height: 1.45,
         color: AppColors.textDark,
       ),
@@ -486,7 +380,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
                 Text(
                   'Mode Anonim',
                   style: TextStyle(
-                    fontSize: 13.5,
+                    fontSize: AppTypography.body,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
                   ),
@@ -494,7 +388,10 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
                 SizedBox(height: 2),
                 Text(
                   'Nama & identitas Anda disembunyikan.',
-                  style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+                  style: TextStyle(
+                    fontSize: AppTypography.caption,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ],
             ),
@@ -505,9 +402,7 @@ class _CreateThreadScreenState extends State<CreateThreadScreen> {
             child: Switch(
               value: _isAnonymous,
               activeThumbColor: AppColors.primary,
-              onChanged: _isSubmitting
-                  ? null
-                  : (v) => setState(() => _isAnonymous = v),
+              onChanged: _isSubmitting ? null : _viewModel.setAnonymous,
             ),
           ),
         ],

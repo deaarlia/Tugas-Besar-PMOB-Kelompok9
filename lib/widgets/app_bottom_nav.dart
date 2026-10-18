@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 
 /// Bottom navbar sesuai Figma: Beranda, Komunitas, [+], Notifikasi, Profil.
@@ -6,7 +7,8 @@ import '../theme/app_theme.dart';
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final int unreadCount;
-  final ValueChanged<int> onTap; // 0 Beranda, 1 Komunitas, 2 Notifikasi, 3 Profil
+  final ValueChanged<int>
+  onTap; // 0 Beranda, 1 Komunitas, 2 Notifikasi, 3 Profil
   final VoidCallback onCreate;
 
   const AppBottomNav({
@@ -48,7 +50,11 @@ class AppBottomNav extends StatelessWidget {
                           child: SizedBox(
                             width: 56,
                             height: 56,
-                            child: Icon(Icons.add, color: Colors.white, size: 30),
+                            child: Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 30,
+                            ),
                           ),
                         ),
                       ),
@@ -56,8 +62,13 @@ class AppBottomNav extends StatelessWidget {
                   ),
                 ),
               ),
-              _item(2, Icons.notifications_outlined, Icons.notifications, 'Notifikasi',
-                  badge: unreadCount),
+              _item(
+                2,
+                Icons.notifications_outlined,
+                Icons.notifications,
+                'Notifikasi',
+                badge: unreadCount,
+              ),
               _item(3, Icons.person_outline, Icons.person, 'Profil'),
             ],
           ),
@@ -66,8 +77,13 @@ class AppBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _item(int index, IconData icon, IconData activeIcon, String label,
-      {int badge = 0}) {
+  Widget _item(
+    int index,
+    IconData icon,
+    IconData activeIcon,
+    String label, {
+    int badge = 0,
+  }) {
     final selected = currentIndex == index;
     final color = selected ? AppColors.primary : AppColors.textMuted;
     return Expanded(
@@ -85,7 +101,7 @@ class AppBottomNav extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: AppTypography.caption,
                 color: color,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),

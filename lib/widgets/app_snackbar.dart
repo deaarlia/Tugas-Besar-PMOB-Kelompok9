@@ -31,4 +31,23 @@ class AppSnackbar {
       ),
     );
   }
+
+  static void showError(BuildContext context, String message) {
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        backgroundColor: AppColors.error,
+        duration: const Duration(seconds: 3),
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
 }

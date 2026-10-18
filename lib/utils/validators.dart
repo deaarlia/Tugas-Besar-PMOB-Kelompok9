@@ -68,6 +68,16 @@ class Validators {
   }
 
   static String? photoFile(String name, int sizeBytes, {String? mimeType}) {
+    final formatError = photoFormat(name, mimeType: mimeType);
+    if (formatError != null) return formatError;
+    if (sizeBytes == 0) return 'Foto kosong tidak dapat dilampirkan.';
+    if (sizeBytes > maxPhotoBytes) {
+      return 'Ukuran foto maksimal 3 MB.';
+    }
+    return null;
+  }
+
+  static String? photoFormat(String name, {String? mimeType}) {
     final extension = name.contains('.')
         ? name.split('.').last.toLowerCase()
         : '';
@@ -76,10 +86,6 @@ class Validators {
     final validMime = mime == 'image/jpeg' || mime == 'image/png';
     if (!validExtension && !validMime) {
       return 'Format foto harus JPG atau PNG.';
-    }
-    if (sizeBytes == 0) return 'Foto kosong tidak dapat dilampirkan.';
-    if (sizeBytes > maxPhotoBytes) {
-      return 'Ukuran foto maksimal 3 MB.';
     }
     return null;
   }

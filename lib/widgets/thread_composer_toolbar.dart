@@ -8,7 +8,9 @@ class ThreadComposerToolbar extends StatelessWidget {
   final int maxContent;
   final bool isSubmitting;
   final bool Function() canPost;
+  final String postLabel;
   final VoidCallback onAttachPhoto;
+  final VoidCallback onCapturePhoto;
   final VoidCallback onAttachDocument;
   final VoidCallback onPost;
 
@@ -19,7 +21,9 @@ class ThreadComposerToolbar extends StatelessWidget {
     required this.maxContent,
     required this.isSubmitting,
     required this.canPost,
+    this.postLabel = 'Posting',
     required this.onAttachPhoto,
+    required this.onCapturePhoto,
     required this.onAttachDocument,
     required this.onPost,
   });
@@ -53,6 +57,11 @@ class ThreadComposerToolbar extends StatelessWidget {
         children: [
           tool(Icons.image_outlined, 'Lampirkan foto', onAttachPhoto),
           tool(
+            Icons.camera_alt_outlined,
+            'Ambil foto dengan kamera',
+            onCapturePhoto,
+          ),
+          tool(
             Icons.description_outlined,
             'Lampirkan dokumen (maks. 10 MB)',
             onAttachDocument,
@@ -66,7 +75,7 @@ class ThreadComposerToolbar extends StatelessWidget {
                 Text(
                   '${contentController.text.length}/$maxContent',
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: AppTypography.caption,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textMuted,
                   ),
@@ -95,10 +104,10 @@ class ThreadComposerToolbar extends StatelessWidget {
                             color: AppColors.primary,
                           ),
                         )
-                      : const Text(
-                          'Posting',
+                      : Text(
+                          postLabel,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: AppTypography.body,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

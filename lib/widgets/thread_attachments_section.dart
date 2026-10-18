@@ -43,7 +43,7 @@ class ThreadAttachmentsSection extends StatelessWidget {
                     const Text(
                       'Lampiran Foto',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: AppTypography.sectionTitle,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textDark,
                       ),
@@ -53,7 +53,7 @@ class ThreadAttachmentsSection extends StatelessWidget {
                       '${photos.length}/${Validators.maxPhotoCount} Foto '
                       '(Maks ${Validators.maxPhotoBytes ~/ (1024 * 1024)} MB)',
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: AppTypography.label,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textMuted,
                       ),
@@ -82,7 +82,7 @@ class ThreadAttachmentsSection extends StatelessWidget {
                       child: Text(
                         'Format yang didukung: JPG, PNG. Maksimum 3 MB per foto.',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppTypography.body,
                           color: AppColors.textMuted,
                         ),
                       ),
@@ -166,7 +166,7 @@ class ThreadAttachmentsSection extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: AppTypography.label,
                     color: AppColors.textMuted,
                   ),
                 ),

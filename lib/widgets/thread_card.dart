@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/thread_post.dart';
 import '../models/user_profile.dart';
 import '../theme/app_theme.dart';
+import 'vote_control.dart';
 
 class ThreadCard extends StatelessWidget {
   final ThreadPost thread;
@@ -10,6 +11,9 @@ class ThreadCard extends StatelessWidget {
   final bool isFollowed;
   final VoidCallback onToggleFollow;
   final VoidCallback? onOpenDetails;
+  final ValueChanged<int>? onVote;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
   final bool isDetail;
 
   const ThreadCard({
@@ -19,6 +23,9 @@ class ThreadCard extends StatelessWidget {
     required this.isFollowed,
     required this.onToggleFollow,
     this.onOpenDetails,
+    this.onVote,
+    this.onEdit,
+    this.onDelete,
     this.isDetail = false,
   });
 
@@ -56,7 +63,7 @@ class ThreadCard extends StatelessWidget {
                           style: const TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                            fontSize: AppTypography.label,
                           ),
                         ),
                 ),
@@ -70,7 +77,7 @@ class ThreadCard extends StatelessWidget {
                         Text(
                           thread.displayAuthor,
                           style: const TextStyle(
-                            fontSize: 13.5,
+                            fontSize: AppTypography.body,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textDark,
                           ),
@@ -89,7 +96,7 @@ class ThreadCard extends StatelessWidget {
                             child: Text(
                               thread.authorBadge,
                               style: const TextStyle(
-                                fontSize: 10,
+                                fontSize: AppTypography.micro,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF1F4E8C),
                               ),
@@ -99,9 +106,9 @@ class ThreadCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      thread.timeLabel,
+                      '${thread.timeLabel}${thread.isEdited ? ' · diedit' : ''}',
                       style: const TextStyle(
-                        fontSize: 11.5,
+                        fontSize: AppTypography.caption,
                         color: AppColors.textMuted,
                       ),
                     ),
@@ -131,7 +138,7 @@ class ThreadCard extends StatelessWidget {
                     child: Text(
                       isFollowed ? 'Mengikuti' : '+ Ikuti',
                       style: const TextStyle(
-                        fontSize: 11.5,
+                        fontSize: AppTypography.caption,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
                       ),
@@ -140,7 +147,11 @@ class ThreadCard extends StatelessWidget {
                 PopupMenuButton<String>(
                   tooltip: 'Opsi postingan',
                   onSelected: (action) {
-                    if (action == 'report') {
+                    if (action == 'edit') {
+                      onEdit?.call();
+                    } else if (action == 'delete') {
+                      onDelete?.call();
+                    } else if (action == 'report') {
                       showDialog<void>(
                         context: context,
                         builder: (context) => AlertDialog(
@@ -158,12 +169,23 @@ class ThreadCard extends StatelessWidget {
                       );
                     }
                   },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem<String>(
-                      value: 'report',
-                      child: Text('Laporkan postingan'),
-                    ),
-                  ],
+                  itemBuilder: (context) => isOwnPost
+                      ? const [
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Edit utas'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Hapus utas'),
+                          ),
+                        ]
+                      : const [
+                          PopupMenuItem<String>(
+                            value: 'report',
+                            child: Text('Laporkan postingan'),
+                          ),
+                        ],
                   icon: const Icon(Icons.more_vert, color: AppColors.textMuted),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
@@ -178,24 +200,34 @@ class ThreadCard extends StatelessWidget {
             Text(
               thread.title,
               style: const TextStyle(
-                fontSize: 14.5,
+                fontSize: AppTypography.sectionTitle,
                 height: 1.35,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
               ),
             ),
-            const SizedBox(height: 4),
-            // Isi Postingan
-            Text(
-              thread.content,
-              maxLines: isDetail ? null : 4,
-              overflow: isDetail ? null : TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                height: 1.45,
-                color: Color(0xFF374151),
+            const SizedBox(height: 5),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.avatarBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                thread.community,
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontSize: AppTypography.micro,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
+            const SizedBox(height: 4),
+            // Isi Postingan
+            if (isDetail)
+              Text(thread.content, style: _threadContentStyle)
+            else
+              _ThreadContentPreview(content: thread.content),
             if (thread.topics.isNotEmpty) ...[
               const SizedBox(height: 6),
               Wrap(
@@ -206,7 +238,7 @@ class ThreadCard extends StatelessWidget {
                       (t) => Text(
                         '#$t',
                         style: const TextStyle(
-                          fontSize: 11.5,
+                          fontSize: AppTypography.caption,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
                         ),
@@ -313,7 +345,7 @@ class ThreadCard extends StatelessWidget {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 16,
+                                fontSize: AppTypography.sectionTitle,
                               ),
                             ),
                           ),
@@ -348,7 +380,7 @@ class ThreadCard extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.textDark,
                 fontWeight: FontWeight.w600,
-                fontSize: 12,
+                fontSize: AppTypography.label,
               ),
             ),
           ),
@@ -360,37 +392,12 @@ class ThreadCard extends StatelessWidget {
   Widget _buildFooter() {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColors.chipBg,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.arrow_upward,
-                size: 14,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 3),
-              Text(
-                '${thread.upvotes}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11.5,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.arrow_downward,
-                size: 14,
-                color: AppColors.textMuted,
-              ),
-            ],
-          ),
+        VoteControl(
+          upvoteCount: thread.upvoteCount,
+          downvoteCount: thread.downvoteCount,
+          myVote: thread.myVote,
+          onVote: onVote,
+          compact: true,
         ),
         const Spacer(),
         Row(
@@ -406,7 +413,7 @@ class ThreadCard extends StatelessWidget {
               '${thread.comments}',
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 11.5,
+                fontSize: AppTypography.caption,
               ),
             ),
           ],
@@ -415,5 +422,108 @@ class ThreadCard extends StatelessWidget {
         const Icon(Icons.share_outlined, size: 16, color: AppColors.textMuted),
       ],
     );
+  }
+}
+
+const _threadContentStyle = TextStyle(
+  fontSize: AppTypography.body,
+  height: 1.45,
+  color: Color(0xFF374151),
+);
+
+class _ThreadContentPreview extends StatelessWidget {
+  const _ThreadContentPreview({required this.content});
+
+  static const int _maxLines = 4;
+  static const String _readMore = '... selebihnya';
+  static const TextStyle _readMoreStyle = TextStyle(
+    color: AppColors.primary,
+    fontWeight: FontWeight.w700,
+  );
+
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textStyle = DefaultTextStyle.of(context).style
+            .merge(_threadContentStyle);
+        final textScaler = MediaQuery.textScalerOf(context);
+        final textDirection = Directionality.of(context);
+        final characters = content.runes.toList(growable: false);
+
+        TextSpan spanFor(int characterCount) {
+          final prefix = String.fromCharCodes(characters.take(characterCount))
+              .trimRight();
+          return TextSpan(
+            style: textStyle,
+            children: [
+              TextSpan(text: prefix),
+              const TextSpan(text: _readMore, style: _readMoreStyle),
+            ],
+          );
+        }
+
+        bool exceedsMaxLines(InlineSpan span) {
+          final painter = TextPainter(
+            text: span,
+            textDirection: textDirection,
+            textScaler: textScaler,
+            maxLines: _maxLines,
+            ellipsis: '\u2026',
+          )..layout(maxWidth: constraints.maxWidth);
+          final exceeds = painter.didExceedMaxLines;
+          painter.dispose();
+          return exceeds;
+        }
+
+        final fullTextPainter = TextPainter(
+          text: TextSpan(text: content, style: textStyle),
+          textDirection: textDirection,
+          textScaler: textScaler,
+          maxLines: _maxLines,
+          ellipsis: '\u2026',
+        )..layout(maxWidth: constraints.maxWidth);
+        final isTruncated = fullTextPainter.didExceedMaxLines;
+        fullTextPainter.dispose();
+
+        final span = isTruncated
+            ? spanFor(
+                _largestFittingPrefix(
+                  characters.length,
+                  spanFor,
+                  exceedsMaxLines,
+                ),
+              )
+            : TextSpan(text: content, style: textStyle);
+
+        return RichText(
+          text: span,
+          maxLines: _maxLines,
+          overflow: TextOverflow.clip,
+          textDirection: textDirection,
+          textScaler: textScaler,
+        );
+      },
+    );
+  }
+
+  int _largestFittingPrefix(
+    int characterCount,
+    TextSpan Function(int) spanFor,
+    bool Function(InlineSpan) exceedsMaxLines,
+  ) {
+    var low = 0;
+    var high = characterCount;
+    while (low < high) {
+      final middle = (low + high + 1) ~/ 2;
+      if (exceedsMaxLines(spanFor(middle))) {
+        high = middle - 1;
+      } else {
+        low = middle;
+      }
+    }
+    return low;
   }
 }

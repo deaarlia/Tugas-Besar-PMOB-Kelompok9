@@ -4,16 +4,15 @@ import '../data/thread_repository.dart';
 import '../models/thread_post.dart';
 import '../models/user_profile.dart';
 import '../routes/app_routes.dart';
+import '../viewmodels/home_view_model.dart';
 import 'thread_detail_screen.dart';
+import 'create_thread_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/state_views.dart';
 import '../widgets/thread_card.dart';
-
-enum ViewStatus { loading, success, error }
-
-enum FeedFilter { terbaru, semuaKomunitas, terpopuler, belumTerjawab }
+import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   // Data pengguna yang sedang login
@@ -25,50 +24,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _repository = ThreadRepository.instance;
-  final _searchController = TextEditingController();
+  late final HomeViewModel _viewModel = HomeViewModel();
   final _scrollController = ScrollController();
-
-  ViewStatus _status = ViewStatus.loading;
-  List<ThreadPost> _threads = [];
-  String _errorMessage = '';
-
-  int _tabIndex = 0; // 0 = Untuk Anda, 1 = Diikuti
-  FeedFilter _filter = FeedFilter.terbaru;
-  String _query = '';
-  final Set<String> _followed = {};
 
   @override
   void initState() {
     super.initState();
-    _loadThreads();
+    _viewModel.loadThreads();
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.dispose();
+    _viewModel.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadThreads() async {
-    if (_status != ViewStatus.loading) {
-      setState(() => _status = ViewStatus.loading);
-    }
-    try {
-      final threads = await _repository.fetchThreads();
-      if (!mounted) return;
-      setState(() {
-        _threads = List.of(threads);
-        _status = ViewStatus.success;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
-        _status = ViewStatus.error;
-      });
-    }
   }
 
   Future<void> _openCreateForm() async {
@@ -80,13 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!mounted || newThread == null) return;
 
-    setState(() {
-      _threads = _repository.threads;
-      _tabIndex = 0;
-      _filter = FeedFilter.terbaru;
-      _query = '';
-      _searchController.clear();
-    });
+    _viewModel.onThreadCreated();
 
     // Gulir ke atas agar utas baru langsung terlihat
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -103,12 +66,64 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute<void>(
         builder: (_) => ThreadDetailScreen(
           thread: thread,
+          currentUser: widget.currentUser,
           isOwnPost: isOwnPost,
-          isFollowed: _followed.contains(thread.authorName),
-          onToggleFollow: () => _toggleFollow(thread.authorName),
+          isFollowed: _viewModel.followed.contains(thread.authorName),
+          onToggleFollow: () => _viewModel.toggleFollow(thread.authorName),
+        ),
+      ),
+    ).then((_) {
+      if (mounted) _viewModel.refreshThreads();
+    });
+  }
+
+  Future<void> _editThread(ThreadPost thread) async {
+    final updated = await Navigator.push<ThreadPost>(
+      context,
+      MaterialPageRoute<ThreadPost>(
+        builder: (_) => CreateThreadScreen(
+          author: widget.currentUser,
+          editingThread: thread,
         ),
       ),
     );
+    if (!mounted || updated == null) return;
+    _viewModel.refreshThreads();
+    AppSnackbar.showSuccess(context, 'Utas berhasil diperbarui.');
+  }
+
+  Future<void> _deleteThread(ThreadPost thread) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Hapus utas?'),
+        content: const Text(
+          'Utas akan disembunyikan dari komunitas. Tindakan ini tidak dapat dibatalkan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || shouldDelete != true) return;
+    try {
+      await ThreadRepository.instance.deleteThread(
+        threadId: thread.id,
+        authorName: widget.currentUser.name,
+      );
+      if (!mounted) return;
+      _viewModel.refreshThreads();
+      AppSnackbar.showSuccess(context, 'Utas berhasil dihapus.');
+    } on ThreadException catch (error) {
+      if (mounted) AppSnackbar.showError(context, error.message);
+    }
   }
 
   void _onNavTap(int index) {
@@ -122,75 +137,39 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _toggleFollow(String authorName) {
-    setState(() {
-      if (!_followed.remove(authorName)) _followed.add(authorName);
-    });
-  }
-
-  List<ThreadPost> get _visibleThreads {
-    var list = List.of(_threads);
-
-    if (_tabIndex == 1) {
-      list = list
-          .where((t) => !t.isAnonymous && _followed.contains(t.authorName))
-          .toList();
-    }
-
-    if (_query.isNotEmpty) {
-      final q = _query.toLowerCase();
-      list = list
-          .where(
-            (t) =>
-                t.title.toLowerCase().contains(q) ||
-                t.content.toLowerCase().contains(q) ||
-                t.topics.any((x) => x.toLowerCase().contains(q)),
-          )
-          .toList();
-    }
-
-    switch (_filter) {
-      case FeedFilter.terpopuler:
-        list.sort((a, b) => b.upvotes.compareTo(a.upvotes));
-      case FeedFilter.belumTerjawab:
-        list = list.where((t) => t.comments == 0).toList();
-        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      case FeedFilter.terbaru:
-      case FeedFilter.semuaKomunitas:
-        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    }
-    return list;
-  }
-
-  String get _emptyMessage {
-    if (_query.isNotEmpty) return 'Tidak ada utas yang cocok dengan "$_query".';
-    if (_tabIndex == 1) return 'Belum ada utas dari akun yang kamu ikuti.';
-    if (_filter == FeedFilter.belumTerjawab) {
-      return 'Semua utas sudah ada tanggapan.';
-    }
-    return 'Belum ada utas. Jadilah yang pertama!';
+  Future<void> _openSearch() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => SearchScreen(currentUser: widget.currentUser),
+      ),
+    );
+    if (mounted) _viewModel.refreshThreads();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildSearch(),
-            _buildTabs(),
-            _buildFilterChips(),
-            Expanded(child: _buildContent()),
-          ],
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) => Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildSearch(),
+              _buildTabs(),
+              _buildFilterChips(),
+              Expanded(child: _buildContent()),
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: AppBottomNav(
-        currentIndex: 0,
-        unreadCount: 3,
-        onTap: _onNavTap,
-        onCreate: _openCreateForm,
+        bottomNavigationBar: AppBottomNav(
+          currentIndex: 0,
+          unreadCount: 3,
+          onTap: _onNavTap,
+          onCreate: _openCreateForm,
+        ),
       ),
     );
   }
@@ -214,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text(
             'UnandSpace',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: AppTypography.pageTitle,
               fontWeight: FontWeight.w800,
               color: AppColors.primary,
             ),
@@ -222,13 +201,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const Spacer(),
           // Avatar juga membuka menu simulasi error (khusus untuk demo)
           PopupMenuButton<String>(
-            onSelected: (_) => setState(
-              () => _repository.simulateError = !_repository.simulateError,
-            ),
+            onSelected: (_) => _viewModel.toggleSimulateError(),
             itemBuilder: (context) => [
               CheckedPopupMenuItem(
                 value: 'error',
-                checked: _repository.simulateError,
+                checked: _viewModel.simulateError,
                 child: const Text('Simulasikan error kirim'),
               ),
             ],
@@ -240,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
-                  fontSize: 12,
+                  fontSize: AppTypography.label,
                 ),
               ),
             ),
@@ -256,28 +233,35 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(fontSize: 13),
-              onChanged: (v) => setState(() => _query = v.trim()),
-              decoration: InputDecoration(
-                hintText: 'Cari topik, mata kuliah, komunitas...',
-                hintStyle: const TextStyle(fontSize: 13),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-                filled: true,
-                fillColor: AppColors.chipBg,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
+            child: SizedBox(
+              height: 40,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: _openSearch,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.chipBg,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.search, color: AppColors.primary, size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Cari topik, mata kuliah, komunitas...',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: AppTypography.body,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -300,10 +284,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTabs() {
     Widget tab(int index, String label) {
-      final selected = _tabIndex == index;
+      final selected = _viewModel.tabIndex == index;
       return Expanded(
         child: InkWell(
-          onTap: () => setState(() => _tabIndex = index),
+          onTap: () => _viewModel.selectTab(index),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
@@ -318,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: AppTypography.body,
                 fontWeight: FontWeight.w700,
                 color: selected ? AppColors.primary : AppColors.textMuted,
               ),
@@ -328,14 +312,8 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(children: [tab(0, 'Untuk Anda'), tab(1, 'Diikuti')]),
     );
   }
@@ -356,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final filter = FeedFilter.values[index];
-          final selected = _filter == filter;
+          final selected = _viewModel.filter == filter;
           return ChoiceChip(
             label: Text(labels[filter]!),
             selected: selected,
@@ -368,11 +346,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             shape: const StadiumBorder(),
             labelStyle: TextStyle(
-              fontSize: 12,
+              fontSize: AppTypography.label,
               fontWeight: FontWeight.w600,
               color: selected ? Colors.white : AppColors.textMuted,
             ),
-            onSelected: (_) => setState(() => _filter = filter),
+            onSelected: (_) => _viewModel.selectFilter(filter),
           );
         },
       ),
@@ -380,33 +358,79 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildContent() {
-    return switch (_status) {
+    return switch (_viewModel.status) {
       ViewStatus.loading => const LoadingView(message: 'Memuat utas...'),
       ViewStatus.error => ErrorView(
-        message: _errorMessage,
-        onRetry: _loadThreads,
+        message: _viewModel.errorMessage,
+        onRetry: _viewModel.loadThreads,
       ),
       ViewStatus.success => _buildFeed(),
     };
   }
 
   Widget _buildFeed() {
-    final threads = _visibleThreads;
+    final threads = _viewModel.visibleThreads;
     if (threads.isEmpty) {
-      return EmptyView(icon: Icons.forum_outlined, message: _emptyMessage);
+      return EmptyView(
+        icon: Icons.forum_outlined,
+        message: _viewModel.emptyMessage,
+      );
     }
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 16),
-      itemCount: threads.length,
+      itemCount: threads.length + (_viewModel.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == threads.length) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: _viewModel.isLoadingMore
+                  ? const CircularProgressIndicator()
+                  : _viewModel.loadMoreError != null
+                  ? Column(
+                      children: [
+                        Text(
+                          _viewModel.loadMoreError!,
+                          textAlign: TextAlign.center,
+                        ),
+                        TextButton(
+                          onPressed: _viewModel.loadMore,
+                          child: const Text('Coba lagi'),
+                        ),
+                      ],
+                    )
+                  : TextButton(
+                      onPressed: _viewModel.loadMore,
+                      child: const Text('Muat utas lainnya'),
+                    ),
+            ),
+          );
+        }
         final t = threads[index];
+        final isOwnPost = t.authorName == widget.currentUser.name;
         return ThreadCard(
           thread: t,
-          isOwnPost: t.authorName == widget.currentUser.name,
-          isFollowed: _followed.contains(t.authorName),
-          onToggleFollow: () => _toggleFollow(t.authorName),
+          isOwnPost: isOwnPost,
+          isFollowed: _viewModel.followed.contains(t.authorName),
+          onToggleFollow: () => _viewModel.toggleFollow(t.authorName),
           onOpenDetails: () => _openThreadDetails(t),
+          onEdit: isOwnPost ? () => _editThread(t) : null,
+          onDelete: isOwnPost ? () => _deleteThread(t) : null,
+          onVote: isOwnPost
+              ? null
+              : (vote) async {
+                  final callbackContext = context;
+                  final error = await _viewModel.voteThread(
+                    threadId: t.id,
+                    userName: widget.currentUser.name,
+                    vote: vote,
+                  );
+                  if (!callbackContext.mounted) return;
+                  if (error != null) {
+                    AppSnackbar.showError(callbackContext, error);
+                  }
+                },
         );
       },
     );

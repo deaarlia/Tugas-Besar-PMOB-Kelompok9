@@ -14,6 +14,7 @@ class ThreadPost {
   final String authorName;
   final String authorBadge;
   final bool isAnonymous;
+  final String community;
 
   /// Foto asli yang dipilih dari galeri.
   final List<Uint8List> photos;
@@ -26,8 +27,15 @@ class ThreadPost {
   final DocumentAttachment? document;
 
   final int upvotes;
+  final int upvoteCount;
+  final int downvoteCount;
   final int comments;
+  final int myVote;
+  final bool isEdited;
+  final bool isDeleted;
+  final String? acceptedCommentId;
   final DateTime createdAt;
+  final DateTime? updatedAt;
 
   const ThreadPost({
     required this.id,
@@ -37,17 +45,27 @@ class ThreadPost {
     required this.authorName,
     required this.authorBadge,
     required this.isAnonymous,
+    this.community = 'Umum',
     this.photos = const [],
     this.placeholderPhotoCount = 0,
     this.linkUrl,
     this.poll,
     this.document,
     this.upvotes = 0,
+    int? upvoteCount,
+    int? downvoteCount,
     this.comments = 0,
+    this.myVote = 0,
+    this.isEdited = false,
+    this.isDeleted = false,
+    this.acceptedCommentId,
     required this.createdAt,
-  });
+    this.updatedAt,
+  }) : upvoteCount = upvoteCount ?? (upvotes > 0 ? upvotes : 0),
+       downvoteCount = downvoteCount ?? (upvotes < 0 ? -upvotes : 0);
 
   int get photoCount => photos.length + placeholderPhotoCount;
+  int get score => upvotes;
 
   /// Mode anonim: nama asli tidak ditampilkan.
   String get displayAuthor => isAnonymous ? 'Mahasiswa Anonim' : authorName;
@@ -59,5 +77,54 @@ class ThreadPost {
     if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';
     if (diff.inHours < 24) return '${diff.inHours} jam lalu';
     return '${diff.inDays} hari lalu';
+  }
+
+  ThreadPost copyWith({
+    String? title,
+    String? content,
+    List<String>? topics,
+    String? community,
+    List<Uint8List>? photos,
+    int? upvotes,
+    int? upvoteCount,
+    int? downvoteCount,
+    int? comments,
+    int? myVote,
+    bool? isAnonymous,
+    bool? isEdited,
+    bool? isDeleted,
+    String? acceptedCommentId,
+    bool clearAcceptedComment = false,
+    DocumentAttachment? document,
+    bool clearDocument = false,
+    DateTime? updatedAt,
+  }) {
+    return ThreadPost(
+      id: id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      topics: topics ?? this.topics,
+      authorName: authorName,
+      authorBadge: authorBadge,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
+      community: community ?? this.community,
+      photos: photos ?? this.photos,
+      placeholderPhotoCount: placeholderPhotoCount,
+      linkUrl: linkUrl,
+      poll: poll,
+      document: clearDocument ? null : (document ?? this.document),
+      upvotes: upvotes ?? this.upvotes,
+      upvoteCount: upvoteCount ?? this.upvoteCount,
+      downvoteCount: downvoteCount ?? this.downvoteCount,
+      comments: comments ?? this.comments,
+      myVote: myVote ?? this.myVote,
+      isEdited: isEdited ?? this.isEdited,
+      isDeleted: isDeleted ?? this.isDeleted,
+      acceptedCommentId: clearAcceptedComment
+          ? null
+          : (acceptedCommentId ?? this.acceptedCommentId),
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 }
