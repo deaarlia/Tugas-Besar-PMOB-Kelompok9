@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+
 import '../models/thread_post.dart';
 import '../models/user_profile.dart';
 import '../screens/create_thread_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/profile_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
 
   static const String home = '/home';
   static const String createThread = '/create-thread';
+  static const String profile = '/profile';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -16,6 +19,18 @@ class AppRoutes {
         return MaterialPageRoute<void>(
           builder: (_) => const HomeScreen(currentUser: UserProfile.demo),
           settings: settings,
+        );
+      case profile:
+        final args = settings.arguments;
+        if (args is UserProfile) {
+          return MaterialPageRoute<void>(
+            builder: (_) => ProfileScreen(currentUser: args),
+            settings: settings,
+          );
+        }
+        return _errorRoute<void>(
+          settings,
+          'Data pengguna tidak dikirim ke profil.',
         );
       case createThread:
         // Argument WAJIB UserProfile -> cek tipenya dulu
@@ -37,7 +52,10 @@ class AppRoutes {
   }
 
   static Route<dynamic> onUnknownRoute(RouteSettings settings) {
-    return _errorRoute<void>(settings, 'Halaman yang kamu tuju belum tersedia.');
+    return _errorRoute<void>(
+      settings,
+      'Halaman yang kamu tuju belum tersedia.',
+    );
   }
 
   static Route<T> _errorRoute<T>(RouteSettings settings, String message) {

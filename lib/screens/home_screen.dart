@@ -128,6 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onNavTap(int index) {
     if (index == 0) return; // sudah di Beranda
+    if (index == 3) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.profile,
+        arguments: widget.currentUser,
+      );
+      return;
+    }
     _showSoon('Halaman ini belum tersedia.');
   }
 
@@ -199,7 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const Spacer(),
-          // Avatar juga membuka menu simulasi error (khusus untuk demo)
           PopupMenuButton<String>(
             onSelected: (_) => _viewModel.toggleSimulateError(),
             itemBuilder: (context) => [
@@ -209,18 +216,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Text('Simulasikan error kirim'),
               ),
             ],
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.avatarBg,
-              child: Text(
-                widget.currentUser.initials,
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: AppTypography.label,
-                ),
-              ),
-            ),
+            tooltip: 'Menu lainnya',
+            child: const Icon(Icons.more_vert, color: AppColors.textMuted),
           ),
         ],
       ),

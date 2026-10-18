@@ -100,6 +100,10 @@ class ThreadRepository {
         ),
   );
 
+  List<ThreadPost> likedThreadsBy(String userName) => List.unmodifiable(
+    threads.where((thread) => _threadVotes[thread.id]?[userName] == 1),
+  );
+
   int _activeCommentCount(String threadId) =>
       (_comments[threadId] ?? const <ThreadComment>[])
           .where((comment) => !comment.isDeleted)
