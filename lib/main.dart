@@ -9,13 +9,14 @@ import 'package:tugas_pmob/viewmodels/thread_feed_view_model.dart';
 import 'package:tugas_pmob/repositories/community_repository.dart';
 import 'package:tugas_pmob/repositories/report_repository.dart';
 import 'package:tugas_pmob/repositories/thread_repository.dart';
+import 'package:tugas_pmob/viewmodels/notification_view_model.dart';
+import 'package:tugas_pmob/viewmodels/profile_view_model.dart';
 
 // Import screens
 import 'package:tugas_pmob/screens/catatan_form_screen.dart';
-import 'package:tugas_pmob/screens/community_explore_screen.dart';
 import 'package:tugas_pmob/screens/detail_screen.dart';
-import 'package:tugas_pmob/screens/home_screen.dart';
 import 'package:tugas_pmob/screens/login_page.dart';
+import 'package:tugas_pmob/screens/main_shell.dart';
 import 'package:tugas_pmob/screens/not_found_screen.dart';
 
 void main() {
@@ -63,6 +64,16 @@ class UnandSpaceApp extends StatelessWidget {
           create: (context) =>
               ThreadFeedViewModel(context.read<ThreadRepository>()),
         ),
+
+        // 6. NotificationViewModel (data notifikasi dummy)
+        ChangeNotifierProvider<NotificationViewModel>(
+          create: (_) => NotificationViewModel(),
+        ),
+
+        // 7. ProfileViewModel (data profil pengguna)
+        ChangeNotifierProvider<ProfileViewModel>(
+          create: (_) => ProfileViewModel(),
+        ),
       ],
       child: MaterialApp(
         title: 'Unand Space',
@@ -84,6 +95,7 @@ class AppRoutes {
   static const String detail = '/detail';
   static const String catatanForm = '/catatan-form';
   static const String communityExplore = '/community-explore'; // Route untuk FR-01
+  static const String notification = '/notifikasi';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -94,7 +106,7 @@ class AppRoutes {
         );
       case home:
         return MaterialPageRoute<void>(
-          builder: (_) => const HomeScreen(),
+          builder: (_) => const MainShell(),
           settings: settings,
         );
       case detail:
@@ -109,11 +121,6 @@ class AppRoutes {
       case catatanForm:
         return MaterialPageRoute<String>(
           builder: (_) => const CatatanFormScreen(),
-          settings: settings,
-        );
-      case communityExplore:
-        return MaterialPageRoute<void>(
-          builder: (_) => const CommunityExploreScreen(),
           settings: settings,
         );
       default:

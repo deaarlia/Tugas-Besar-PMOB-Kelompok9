@@ -8,18 +8,17 @@ import '../viewmodels/thread_feed_view_model.dart';
 import '../widgets/community_filter_sheet.dart';
 import '../widgets/report_menu.dart';
 import '../widgets/thread_options_sheet.dart';
-import 'my_reports_screen.dart';
 import 'thread_detail_screen.dart';
 
-/// Beranda (gaya Figma "UnandSpace").
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+/// Konten tab Beranda (tanpa Scaffold/FAB/BottomNav — dikelola MainShell).
+class HomeBody extends StatefulWidget {
+  const HomeBody({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeBody> createState() => _HomeBodyState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeBodyState extends State<HomeBody> {
   late final TextEditingController _searchController;
 
   @override
@@ -203,65 +202,11 @@ class _HomeScreenState extends State<HomeScreen> {
             for (final DemoPost p in threads) _PostCard(post: p),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        onPressed: () {},
-        child: const Icon(Icons.add, size: 30),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            const _Nav(Icons.home, 'Beranda', true),
-
-            // Bungkus menu Komunitas dengan InkWell untuk navigasi ke FR-01
-            InkWell(
-              onTap: () => Navigator.pushNamed(context, '/community-explore'),
-              child: const _Nav(Icons.forum_outlined, 'Komunitas', false),
-            ),
-
-            const SizedBox(width: 48), // Ruang kosong untuk FloatingActionButton
-
-            const _Nav(Icons.notifications_none, 'Notifikasi', false),
-
-            InkWell(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                    builder: (_) => const MyReportsScreen()),
-              ),
-              child: const _Nav(Icons.person_outline, 'Profil', false),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
 
-class _Nav extends StatelessWidget {
-  const _Nav(this.icon, this.label, this.active);
 
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color c = active ? AppColors.primary : AppColors.textSecondary;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Icon(icon, color: c),
-        Text(label, style: TextStyle(fontSize: 11, color: c)),
-      ],
-    );
-  }
-}
 
 class _FilterChipButton extends StatelessWidget {
   const _FilterChipButton({

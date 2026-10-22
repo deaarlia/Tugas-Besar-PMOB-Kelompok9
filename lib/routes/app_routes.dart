@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../screens/catatan_form_screen.dart';
 import '../screens/detail_screen.dart';
-import '../screens/home_screen.dart';
 import '../screens/login_page.dart';
+import '../screens/main_shell.dart';
 import '../screens/not_found_screen.dart';
 
 class AppRoutes {
@@ -23,7 +23,7 @@ class AppRoutes {
         );
       case home:
         return MaterialPageRoute<void>(
-          builder: (_) => const HomeScreen(),
+          builder: (_) => const MainShell(),
           settings: settings,
         );
       case detail:

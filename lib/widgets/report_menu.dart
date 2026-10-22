@@ -119,6 +119,8 @@ Future<void> showReportFlow(BuildContext context, ReportTarget target) async {
     ..showSnackBar(
       SnackBar(
         content: const Text('Laporan berhasil dikirim'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: 'Lihat',
           onPressed: () {
