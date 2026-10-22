@@ -1,7 +1,7 @@
 // lib/viewmodels/reports_provider.dart
 import 'package:flutter/foundation.dart';
-import 'package:tugas_pmob/models/report.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
+import 'package:unand_space/models/report.dart';
+import 'package:unand_space/repositories/community_repository.dart';
 
 class ReportsProvider extends ChangeNotifier {
   ReportsProvider({required this.repository, required this.communityId}) {

@@ -1,33 +1,22 @@
 // lib/screens/community/community_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/models/thread_post.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
-import 'package:tugas_pmob/screens/community/edit_community_screen.dart';
-import 'package:tugas_pmob/screens/community/manage_moderators_screen.dart';
-import 'package:tugas_pmob/screens/community/report_queue_screen.dart';
-import 'package:tugas_pmob/screens/community/rules_edit_screen.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
-import 'package:tugas_pmob/utils/image_source.dart';
-import 'package:tugas_pmob/viewmodels/threads_provider.dart';
-import 'package:tugas_pmob/widgets/community/category_badge.dart';
-import 'package:tugas_pmob/widgets/community/community_avatar.dart';
-import 'package:tugas_pmob/widgets/community/feedback_dialog.dart';
-import 'package:tugas_pmob/widgets/community/thread_widgets.dart';
 import 'package:unand_space/models/community.dart';
+import 'package:unand_space/models/thread_post.dart';
 import 'package:unand_space/repositories/community_repository.dart';
 import 'package:unand_space/screens/community/edit_community_screen.dart';
 import 'package:unand_space/screens/community/manage_moderators_screen.dart';
+import 'package:unand_space/screens/community/report_queue_screen.dart';
 import 'package:unand_space/screens/community/rules_edit_screen.dart';
 import 'package:unand_space/theme/app_colors.dart';
 import 'package:unand_space/theme/app_spacing.dart';
 import 'package:unand_space/theme/app_text_styles.dart';
 import 'package:unand_space/utils/image_source.dart';
+import 'package:unand_space/viewmodels/threads_provider.dart';
 import 'package:unand_space/widgets/community/category_badge.dart';
 import 'package:unand_space/widgets/community/community_avatar.dart';
+import 'package:unand_space/widgets/community/feedback_dialog.dart';
+import 'package:unand_space/widgets/community/thread_widgets.dart';
 
 
 enum _MenuAction { reports, edit, rules, moderators }
@@ -215,9 +204,6 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
                               canModerate: _canModerate,
                             ),
                           )
-
-                        ? const _ThreadsEmptyState()
-
                         : _AboutTab(
                             community: _community,
                             moderators: _moderators,

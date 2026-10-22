@@ -1,10 +1,10 @@
 // lib/widgets/community/thread_widgets.dart
 import 'package:flutter/material.dart';
-import 'package:tugas_pmob/models/thread_post.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
-import 'package:tugas_pmob/utils/format.dart';
+import 'package:unand_space/models/thread_post.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
+import 'package:unand_space/utils/format.dart';
 
 enum _ThreadAction { togglePin }
 

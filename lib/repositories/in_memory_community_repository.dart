@@ -1,10 +1,9 @@
 // lib/repositories/in_memory_community_repository.dart
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/models/report.dart';
-import 'package:tugas_pmob/models/thread_post.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
 import 'package:unand_space/models/community.dart';
+import 'package:unand_space/models/report.dart';
+import 'package:unand_space/models/thread_post.dart';
 import 'package:unand_space/repositories/community_repository.dart';
+
 
 
 /// Hanya untuk menguji UI. Ganti dengan implementasi REST API nanti.
@@ -243,13 +242,15 @@ class InMemoryCommunityRepository implements CommunityRepository {
     }) {
       return ThreadPost(
         id: 't${++_threadSeq}',
-        communityId: c.id,
+        title: body.length > 60 ? '${body.substring(0, 60)}...' : body,
+        content: body,
         authorName: author,
+        authorBadge: anon ? '' : 'Anggota',
         isAnonymous: anon,
-        body: body,
+        community: c.name,
         createdAt: now.subtract(ago),
         upvotes: up,
-        commentCount: cm,
+        comments: cm,
       );
     }
 

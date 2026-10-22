@@ -1,7 +1,7 @@
 // lib/viewmodels/threads_provider.dart
 import 'package:flutter/foundation.dart';
-import 'package:tugas_pmob/models/thread_post.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
+import 'package:unand_space/models/thread_post.dart';
+import 'package:unand_space/repositories/community_repository.dart';
 
 class ThreadsProvider extends ChangeNotifier {
   ThreadsProvider({required this.repository, required this.communityId}) {

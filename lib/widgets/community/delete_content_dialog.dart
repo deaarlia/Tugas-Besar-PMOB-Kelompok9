@@ -1,8 +1,8 @@
 // lib/widgets/community/delete_content_dialog.dart
 import 'package:flutter/material.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
 
 class DeleteContentDialog extends StatelessWidget {
   const DeleteContentDialog({super.key, required this.contentLabel});

@@ -1,16 +1,16 @@
 // lib/screens/community/report_queue_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/models/report.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
-import 'package:tugas_pmob/screens/community/report_detail_screen.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
-import 'package:tugas_pmob/utils/format.dart';
-import 'package:tugas_pmob/viewmodels/reports_provider.dart';
-import 'package:tugas_pmob/widgets/community/report_chips.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/models/report.dart';
+import 'package:unand_space/repositories/community_repository.dart';
+import 'package:unand_space/screens/community/report_detail_screen.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
+import 'package:unand_space/utils/format.dart';
+import 'package:unand_space/viewmodels/reports_provider.dart';
+import 'package:unand_space/widgets/community/report_chips.dart';
 
 /// Dibuka dari menu titik tiga "Antrean Laporan" (moderator dan pembuat).
 class ReportQueueScreen extends StatelessWidget {
