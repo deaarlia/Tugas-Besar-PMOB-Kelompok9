@@ -17,6 +17,18 @@ import 'package:tugas_pmob/widgets/community/category_badge.dart';
 import 'package:tugas_pmob/widgets/community/community_avatar.dart';
 import 'package:tugas_pmob/widgets/community/feedback_dialog.dart';
 import 'package:tugas_pmob/widgets/community/thread_widgets.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/repositories/community_repository.dart';
+import 'package:unand_space/screens/community/edit_community_screen.dart';
+import 'package:unand_space/screens/community/manage_moderators_screen.dart';
+import 'package:unand_space/screens/community/rules_edit_screen.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
+import 'package:unand_space/utils/image_source.dart';
+import 'package:unand_space/widgets/community/category_badge.dart';
+import 'package:unand_space/widgets/community/community_avatar.dart';
+
 
 enum _MenuAction { reports, edit, rules, moderators }
 
@@ -168,6 +180,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         actions: [
           IconButton(icon: const Icon(Icons.search), onPressed: () {}),
           menu ?? const SizedBox.shrink(),
+          ?menu,
         ],
       ),
       body: SafeArea(
@@ -202,6 +215,9 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
                               canModerate: _canModerate,
                             ),
                           )
+
+                        ? const _ThreadsEmptyState()
+
                         : _AboutTab(
                             community: _community,
                             moderators: _moderators,

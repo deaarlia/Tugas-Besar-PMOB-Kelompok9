@@ -2,20 +2,20 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
-import 'package:tugas_pmob/viewmodels/community_form_provider.dart';
-import 'package:tugas_pmob/widgets/community/category_chips.dart';
-import 'package:tugas_pmob/widgets/community/community_text_field.dart';
-import 'package:tugas_pmob/widgets/community/cover_icon_picker.dart';
-import 'package:tugas_pmob/widgets/community/danger_zone.dart';
-import 'package:tugas_pmob/widgets/community/delete_community_dialog.dart';
-import 'package:tugas_pmob/widgets/community/feedback_dialog.dart';
-import 'package:tugas_pmob/widgets/community/guideline_card.dart';
-import 'package:tugas_pmob/widgets/community/privacy_switch_card.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/repositories/community_repository.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
+import 'package:unand_space/viewmodels/community_form_provider.dart';
+import 'package:unand_space/widgets/community/category_chips.dart';
+import 'package:unand_space/widgets/community/community_text_field.dart';
+import 'package:unand_space/widgets/community/cover_icon_picker.dart';
+import 'package:unand_space/widgets/community/danger_zone.dart';
+import 'package:unand_space/widgets/community/delete_community_dialog.dart';
+import 'package:unand_space/widgets/community/feedback_dialog.dart';
+import 'package:unand_space/widgets/community/guideline_card.dart';
+import 'package:unand_space/widgets/community/privacy_switch_card.dart';
 
 /// Form bersama untuk Buat (initial == null) dan Ubah (initial != null).
 /// Membutuhkan `Provider<CommunityRepository>` di atas widget tree.

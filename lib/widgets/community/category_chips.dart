@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
 
 class CategoryChips extends StatelessWidget {
   const CategoryChips({

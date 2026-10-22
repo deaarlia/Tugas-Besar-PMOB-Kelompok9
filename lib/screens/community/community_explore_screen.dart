@@ -1,14 +1,18 @@
 // lib/screens/community/community_explore_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
-import 'package:tugas_pmob/screens/community/community_detail_screen.dart';
-import 'package:tugas_pmob/screens/community/create_community_screen.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
-import 'package:tugas_pmob/widgets/community/community_avatar.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/models/thread_post.dart';
+import 'package:unand_space/models/user_profile.dart';
+import 'package:unand_space/repositories/community_repository.dart';
+import 'package:unand_space/screens/community/community_detail_screen.dart';
+import 'package:unand_space/screens/community/create_community_screen.dart';
+import 'package:unand_space/routes/app_routes.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
+import 'package:unand_space/widgets/app_bottom_nav.dart';
+import 'package:unand_space/widgets/community/community_avatar.dart';
 
 /// Titik awal workflow Buat Komunitas.
 class CommunityExploreScreen extends StatefulWidget {
@@ -53,6 +57,43 @@ class _CommunityExploreScreenState extends State<CommunityExploreScreen> {
     if (created != null) await _openDetail(created);
   }
 
+  void _onNavTap(int index) {
+    switch (index) {
+      case 0:
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil<void>(AppRoutes.home, (_) => false);
+        return;
+      case 1:
+        return;
+      case 2:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Halaman notifikasi belum tersedia.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      case 3:
+        Navigator.of(context)
+            .pushNamed<void>(AppRoutes.profile, arguments: UserProfile.demo);
+        return;
+    }
+  }
+
+  Future<void> _openCreateThread() async {
+    final created = await Navigator.of(context).pushNamed<ThreadPost>(
+      AppRoutes.createThread,
+      arguments: UserProfile.demo,
+    );
+    if (!mounted || created == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Postingan berhasil dibuat!'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,11 +113,7 @@ class _CommunityExploreScreenState extends State<CommunityExploreScreen> {
                       const Expanded(
                         child: Text(
                           'Jelajah Komunitas',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
-                          ),
+                          style: AppTextStyles.appBarTitle,
                         ),
                       ),
                       FilledButton.icon(
@@ -126,6 +163,12 @@ class _CommunityExploreScreenState extends State<CommunityExploreScreen> {
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 1,
+        unreadCount: 3,
+        onTap: _onNavTap,
+        onCreate: _openCreateThread,
       ),
     );
   }

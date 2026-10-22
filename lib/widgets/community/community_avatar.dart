@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/utils/image_source.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/utils/image_source.dart';
 
 class CommunityAvatar extends StatelessWidget {
   const CommunityAvatar({super.key, required this.community, this.radius = 24});

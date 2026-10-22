@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/repositories/community_repository.dart';
 
 class CommunityFormProvider extends ChangeNotifier {
   CommunityFormProvider({required this.repository, this.initial}) {

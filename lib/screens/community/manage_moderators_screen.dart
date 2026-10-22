@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tugas_pmob/models/community.dart';
-import 'package:tugas_pmob/repositories/community_repository.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
-import 'package:tugas_pmob/theme/app_spacing.dart';
-import 'package:tugas_pmob/theme/app_text_styles.dart';
-import 'package:tugas_pmob/viewmodels/moderators_provider.dart';
-import 'package:tugas_pmob/widgets/community/community_text_field.dart';
-import 'package:tugas_pmob/widgets/community/feedback_dialog.dart';
-import 'package:tugas_pmob/widgets/community/revoke_moderator_dialog.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/repositories/community_repository.dart';
+import 'package:unand_space/theme/app_colors.dart';
+import 'package:unand_space/theme/app_spacing.dart';
+import 'package:unand_space/theme/app_text_styles.dart';
+import 'package:unand_space/viewmodels/moderators_provider.dart';
+import 'package:unand_space/widgets/community/community_text_field.dart';
+import 'package:unand_space/widgets/community/feedback_dialog.dart';
+import 'package:unand_space/widgets/community/revoke_moderator_dialog.dart';
 
 /// Dibuka dari menu titik tiga "Kelola Moderator" (hanya pembuat).
 class ManageModeratorsScreen extends StatelessWidget {

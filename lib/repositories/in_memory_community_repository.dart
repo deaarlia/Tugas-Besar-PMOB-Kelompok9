@@ -3,10 +3,13 @@ import 'package:tugas_pmob/models/community.dart';
 import 'package:tugas_pmob/models/report.dart';
 import 'package:tugas_pmob/models/thread_post.dart';
 import 'package:tugas_pmob/repositories/community_repository.dart';
+import 'package:unand_space/models/community.dart';
+import 'package:unand_space/repositories/community_repository.dart';
+
 
 /// Hanya untuk menguji UI. Ganti dengan implementasi REST API nanti.
 class InMemoryCommunityRepository implements CommunityRepository {
-  final List<Community> _items = [];
+  final List<Community> _ithttps://github.com/deaarlia/Tugas-Besar-PMOB-Kelompok9/pull/1/conflict?name=lib%252Frepositories%252Fcommunity_repository.dart&ancestor_oid=63f06ff9cd63938591d4a93d9abf8db679b847a9&base_oid=732e611d4fa60f9a536b563e9db1a06415773698&head_oid=98b1a973beee9d03a6003ae521a53ac0f069346fems = [];
   final Map<String, List<Moderator>> _moderators = {};
   final Map<String, List<ThreadPost>> _threads = {};
   final Map<String, List<Report>> _reports = {};

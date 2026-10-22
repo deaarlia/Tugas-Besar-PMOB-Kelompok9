@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_pmob/theme/app_colors.dart';
+import 'package:unand_space/theme/app_colors.dart';
 
 abstract final class AppTextStyles {
   static const appBarTitle = TextStyle(

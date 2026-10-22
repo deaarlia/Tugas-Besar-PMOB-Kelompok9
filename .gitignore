@@ -32,6 +32,11 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/test/
+
+# Design and archive files
+*.fig
+*.zip
 
 # Symbolication related
 app.*.symbols
