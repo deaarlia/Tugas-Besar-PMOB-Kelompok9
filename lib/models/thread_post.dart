@@ -39,9 +39,7 @@ class ThreadPost {
     isPinned: pinned,
     pinnedAt: pinned ? DateTime.now() : null,
   );
-=======
 import 'dart:typed_data';
-
 import 'attachments.dart';
 
 /// Model satu utas/postingan forum.
